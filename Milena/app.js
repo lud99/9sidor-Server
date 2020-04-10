@@ -6,8 +6,7 @@ const cors = require("cors");
 
 const request = require("request");
 
-const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
+const cheerio = require('cheerio');
 
 app.use(cors());
 
@@ -27,13 +26,12 @@ app.get("/api/v1/articles", (req, res) => {
 
 const getArticles = ({ page, commentAuthor, searchExact }, callback) => {
     get(`https://8sidor.se/${page > 1 ? `page/${page}/` : ""}?s=`, (error, body) => {
-        const dom = new JSDOM(body);
-
-        dom.$ = (query) => (dom.window.document.querySelector(query) || {});
-        dom.$All = (query) => (dom.window.document.querySelectorAll(query) || {});
+        const $ = cheerio.load(body);
 
         const urls = [];
-        dom.$All(".blog-main .article h2 a").forEach(a => urls.push(a.href));
+        $(".blog-main .article h2 a").each((index, a) => {
+            urls.push(a.attribs.href)
+        });
 
         const articles = [];
         urls.forEach(url => getArticle({ url, commentAuthor, searchExact }, (error, article) => {
@@ -47,39 +45,39 @@ const getArticles = ({ page, commentAuthor, searchExact }, callback) => {
 
 const getArticle = ({ url, commentAuthor, searchExact }, callback) => {
     get(url, (error, body) => {
-        const dom = new JSDOM(body);
-
-        dom.$ = (query) => (dom.window.document.querySelector(query) || {});
+        const $ = cheerio.load(body);
 
         const article = {
             url: url,
-            subject: dom.$(".article.article-large .category-header").textContent,
-            subjectColor: dom.$(".article.article-large .category-header").style.backgroundColor,
-            imageSrc: dom.$(".article.article-large img.size-large").src,
-            imageText: dom.$(".article.article-large .image-text").textContent,
-            title: dom.$(".article.article-large h2").textContent,
-            date: dom.$("p.date").textContent,
-            comments: findCommentsByAuthor(dom, commentAuthor, searchExact)
+            subject: $(".blog-main .article.article-large .category-header").text(),
+            subjectColor: $(".article.article-large .category-header").css("background-color"),
+            imageSrc: $(".article.article-large img.size-large").attr("src"),
+            imageText: $(".article.article-large .image-text").text(),
+            title: $(".blog-main .article.article-large h2").text(),
+            date: $("p.date").text(),
+            comments: findCommentsByAuthor($, commentAuthor, searchExact)
         }
 
         callback(error, article);
     });
 }
 
-const findCommentsByAuthor = (dom, authorName, searchExact) => {
-    const allCommentAuthors = dom.window.document.querySelectorAll("cite.fn");
+const findCommentsByAuthor = ($, authorName, searchExact) => {
+    const allCommentAuthors = $("cite.fn");
 
     const comments = [];
-    allCommentAuthors.forEach(author => {
-        const comment = author.parentNode.parentNode;
+    allCommentAuthors.each((index, authorElem) => {
+        const $author = $(authorElem);
+
+        const comment = $author.parent().parent();
 
         // Check if the author is exactly the same
         if (searchExact) {
-            if (author.textContent.toLowerCase().replaceAll(" ") == authorName.toLowerCase().replaceAll(" "))
-                comments.push(comment.outerHTML);
+            if ($author.text().toLowerCase().replaceAll(" ") == authorName.toLowerCase().replaceAll(" "))
+                comments.push($.html(comment));
         } else { // Check if the specified name is somewhere in the author name
-            if (author.textContent.toLowerCase().replaceAll(" ").includes(authorName.toLowerCase().replaceAll(" ")))
-                comments.push(comment.outerHTML);
+            if ($author.text().toLowerCase().replaceAll(" ").includes(authorName.toLowerCase().replaceAll(" ")))
+                comments.push($.html(comment));
         }
     });
 
@@ -88,7 +86,7 @@ const findCommentsByAuthor = (dom, authorName, searchExact) => {
 
 const get = (url, callback) => {
     const options = {
-        url: url,
+        uri: url,
         headers: {
             'User-Agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36"
         }
