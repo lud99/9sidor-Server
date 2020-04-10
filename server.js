@@ -9,4 +9,4 @@ app.use("/milena", Milena.app);
 
 const port = process.env.app_port || 8080;
 
-app.listen(4000, () => console.log("LudvigDB main server running on port 4000"));
+app.listen(port, () => console.log("LudvigDB main server running on port", port));
