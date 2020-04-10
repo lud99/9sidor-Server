@@ -1,0 +1,14 @@
+{
+	"name": "online-chat",
+	"version": "1.0.0",
+	"engines": {
+		"node": "10.15.2"
+	},
+	"dependencies": {
+		"socket.io": "2.2.0",
+		"express": "*"
+	},
+ 	"scripts": {
+    		"start": "node server.js"
+  	}
+}

@@ -1,0 +1,16 @@
+{
+    "name": "ludvigdb",
+    "version": "1.0.0",
+    "description": "The server for everything related to LudvigDB",
+    "main": "server.js",
+    "scripts": {
+        "dev": "nodemon server.js",
+        "start": "node server.js"
+    },
+    "author": "Ludvig Magnusson",
+    "license": "ISC",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.17.1"
+    }
+}

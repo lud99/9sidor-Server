@@ -1,0 +1,22 @@
+{
+    "name": "milena",
+    "version": "1.0.0",
+    "description": "Read all comments made by Milena",
+    "main": "index.js",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "jsdom": "^16.2.2",
+        "request": "^2.88.2"
+    },
+    "devDependencies": {},
+    "scripts": {
+        "dev": "nodemon index.js",
+        "start": "node index.js"
+    },
+    "keywords": [
+        "8sidor"
+    ],
+    "author": "Ludvig Magnusson",
+    "license": "ISC"
+}
