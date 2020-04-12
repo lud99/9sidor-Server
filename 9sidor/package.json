@@ -1,0 +1,17 @@
+{
+    "name": "9sidor-server",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^8.2.0",
+        "express": "^4.17.1",
+        "mongoose": "^5.8.11",
+        "mongoose-type-url": "^1.0.6"
+    },
+    "scripts": {
+        "start": "node main.js",
+        "dev": "nodemon main.js",
+        "deploy": "cf push 9sidor"
+    }
+}
