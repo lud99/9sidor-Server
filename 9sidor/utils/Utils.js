@@ -23,9 +23,11 @@ String.prototype.removeSpecialCharacters = function () {
 String.prototype.removeMultipleSpaces = function () { return this.replace(/\s\s+/g, ' '); }
 
 String.prototype.getSearchQuery = function () {
-    const query = new URL("http://localhost" + this).search.slice(1).split("&");
+    let query = ("http://localhost" + this).split("?")[1];
+    
+    if (!query) return {};
 
-    if (query == "") return {};
+    query = query.split("&");
 
     var res = {};
     for (var i = 0; i < query.length; ++i)

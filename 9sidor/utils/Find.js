@@ -11,9 +11,7 @@ class Find
         try {
             // Get the subject name and make it lowercase
             const subjectName = removeSpecialCharacters((_subject || "all").toLowerCase());
-
-            console.log(subjectName)
-            
+        
             // Options
         
             // Get the page (offset)
@@ -22,7 +20,8 @@ class Find
             // Get the number of results per page
             const limit = parseInt(query.limit) || 9;
         
-            console.log(`Finding all articles with ${subjectName == "all" ? "any subject" : "the subject '%s'"}. Page number %s, %s results per page`, page, limit);
+            console.log(`Finding all articles with ${subjectName == "all" ? "any subject" : "the subject '%s'"}. Page number %s, %s results per page`, 
+                subjectName, page, limit);
         
             // Find the subject
             const subject = await Subject.findOne({ nameNormalized: subjectName });

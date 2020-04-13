@@ -55,8 +55,6 @@ class GetArticles
             }
         };
 
-        console.log(options.getOne, options.customMongooseQuery)
-
         // Find all the matching articles
         if (!options.getOne && !options.customMongooseQuery)
             Find.getArticles(subject, query, mongooseCallback, options);
