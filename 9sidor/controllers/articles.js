@@ -226,7 +226,7 @@ exports.addArticle = async (req, res) => {
         const displayDate = (data.displayDate || data.createdAt).toString();
 
         // Get the custom created at date
-        const customCreatedAt = new Date(data.createdAt);
+        const customCreatedAt = data.createdAt ? new Date(data.createdAt) : undefined;
 
         // Get the subject document for the specified subject
         const subject = await Subject.findOne({ nameLowercase: subjectNameLowercase });
@@ -277,6 +277,8 @@ exports.addArticle = async (req, res) => {
         article = await article.save();
 
         console.log(`Successfully added the article '${title}'`);
+
+        cache.clear();
 
         // Send response
         return res.status(200).json({
