@@ -8,7 +8,7 @@ class GetArticles
     {
         // Check if a cache for the specified url exists
         if (cache.exists(url) && options.useCache) {
-            console.log("Loading from cache", url);
+            //console.log("Loading from cache", url);
 
             // Get the cached response
             const response = cache.get(url);
@@ -25,8 +25,6 @@ class GetArticles
                 // Handle the error if one occurs
                 if (err) throw err;
 
-                //console.log(articles);
-
                 // Format the article data
                 const data = ArticleDataFormatter.format(articles.length == undefined ? [articles] : articles, options.articleFormat); 
 
@@ -42,9 +40,9 @@ class GetArticles
                     // Cache the data
                     cache.update(url, response);
 
-                    console.log("Updating the cache for", url);
+                    //console.log("Updating the cache for", url);
                 } else {
-                    console.log("Not using cache for", url);
+                    //console.log("Not using cache for", url);
                 }
 
                 // Run the callback

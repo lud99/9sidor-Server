@@ -20,8 +20,8 @@ class Find
             // Get the number of results per page
             const limit = parseInt(query.limit) || 9;
         
-            console.log(`Finding all articles with ${subjectName == "all" ? "any subject" : "the subject '%s'"}. Page number %s, %s results per page`, 
-                subjectName, page, limit);
+            /*console.log(`Finding all articles with ${subjectName == "all" ? "any subject" : "the subject '%s'"}. Page number %s, %s results per page`, 
+                subjectName, page, limit);*/
         
             // Find the subject
             const subject = await Subject.findOne({ nameNormalized: subjectName });
@@ -65,7 +65,7 @@ class Find
                 skip(page < 0 ? 0 : (page - 1) * limit). // Only get results for the specified page
                 limit(limit < 0 ? 0 : limit). // Limit the results. If the limit is less than 0, find all articles without a limit
                 sort({ createdAt: -1 }). // Sort the results so that the most recent article is first
-                populate("subject").populate("image").//populate(options.populate). // Replace the subject and image ids with the real documents (if specified)
+                populate("subject").populate("image"). // Replace the subject and image ids with the real documents (if specified)
                 exec((err, articles) => callback(err, articles, prep)); // Callback
         } catch (error) {
             // Handle error
@@ -79,7 +79,7 @@ class Find
             // Find all articles with the same subject as the one specified
             Article.
                 findOne(mongooseQuery). // Find one article
-                populate("subject").populate("image").//populate(options.populate). // Replace the subject and image ids with the real documents (if specified)
+                populate("subject").populate("image"). // Replace the subject and image ids with the real documents (if specified)
                 exec((err, article) => callback(err, article)); // Callback
         } catch (error) {
             // Handle error

@@ -9,7 +9,8 @@ const {
 
     getArticleFromUrl,
      
-    addArticle 
+    addArticle,
+    editArticle
 } = require("../controllers/articles");
 
 const router = express.Router();
@@ -38,5 +39,8 @@ router.route("/url/").get(getArticleFromUrl);
 
 // Add an article
 router.route("/add").post(addArticle);
+
+// Edit an article
+router.route("/edit").patch(editArticle);
 
 module.exports = router;

@@ -21,6 +21,10 @@ const SubjectSchema = mongoose.Schema({
         type: String,
         required: [true, "En url måste anges"]
     },
+    index: {
+        type: Number,
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

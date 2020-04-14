@@ -5,8 +5,7 @@ const ImageSchema = mongoose.Schema({
         type: String,
     },
     url: {
-        type: String,
-        required: [true, "En url måste anges"]
+        type: String
     },
     createdAt: {
         type: Date,

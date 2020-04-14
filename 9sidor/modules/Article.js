@@ -35,6 +35,9 @@ const ArticleSchema = mongoose.Schema({
     url: {
         type: String
     },
+    oldUrl: {
+        type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now
