@@ -16,6 +16,8 @@
         "request": "^2.88.2",
         "mongoose": "^5.8.11",
         "mongoose-type-url": "^1.0.6",
-        "dotenv": "^8.2.0"
+        "dotenv": "^8.2.0",
+        "morgan": "^1.10.0",
+        "sanitize-html": "^1.23.0"
     }
 }
