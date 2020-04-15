@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 
-const Milena = require("./Milena/app")();
+const Milena = require(__dirname + "/Milena/app")();
 const NioSidor = require("./9sidor/app")();
 //const LudDictionary = require("./LudDictionary/app")();
 
