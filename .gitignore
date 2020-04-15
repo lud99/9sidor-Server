@@ -1,7 +1,5 @@
 node_modules
 
-9sidor/static
-# !9sidor/static/images/.gitkeep
+9sidor/static/images/*
 
-9sidor/static
-9sidor/static_
+!9sidor/static/images/.gitkeep

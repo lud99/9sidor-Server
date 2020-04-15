@@ -1,4 +1,5 @@
 node_modules
 
-static
-static_
+static/images/*
+
+!static/images/.gitkeep
