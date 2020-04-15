@@ -10,7 +10,8 @@ const {
     getArticleFromUrl,
      
     addArticle,
-    editArticle
+    editArticle,
+    deleteArticle
 } = require("../controllers/articles");
 
 const router = express.Router();
@@ -42,5 +43,8 @@ router.route("/add").post(addArticle);
 
 // Edit an article
 router.route("/edit").patch(editArticle);
+
+// Detete an article
+router.route("/delete").delete(deleteArticle);
 
 module.exports = router;

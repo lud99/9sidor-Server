@@ -39,7 +39,7 @@ class ErrorHandler
      * @param {{ message: string, stack: string }} error - The JSON error object
      * @param {*} otherData - Any other data to send
      */
-    static handleRouteError(res, error, otherData)
+    static handleRouteError(res, error, otherData = undefined, statusCode = 500)
     {
         // Log the error
         console.error(error);

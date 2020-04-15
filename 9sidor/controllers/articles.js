@@ -184,7 +184,7 @@ exports.getArticleFromUrl = async (req, res) => {
     // Get articles
     GetArticles.get(req.originalUrl, req.params.subject, (err, response) => {
         // Handle error
-        if (err) return ErrorHandler.handleRouteError(res, err);
+        if (err) return ErrorHandler.handleRouteError(res, err, undefined, 404);
 
         res.status(200).json(response);
     }, options);
@@ -222,6 +222,8 @@ exports.addArticle = async (req, res) => {
         // Get the main text
         const mainText = sanitizeHtml((data.mainText || "").toString(), sanitizeOptions);
 
+        console.log(mainText)
+
         if (!mainText) throw { message: "Ingen text angiven" };
 
         // Normalize the main text 
@@ -232,7 +234,7 @@ exports.addArticle = async (req, res) => {
 
         // Use the first paragraph of the main text as the preview text if none is specified
         if (!previewText)
-            previewText = mainText.split("<br /><br />")[0]; // First paragraph
+            previewText = mainText.split("<div><br /></div>")[0]; // First paragraph
 
         // Get the display date
         const displayDate = (data.displayDate || data.createdAt || "").toString();
@@ -288,6 +290,20 @@ exports.addArticle = async (req, res) => {
         article.url = `/${article.subject.nameNormalized}/${urlDate}/${urlTitle}`;
         article.oldUrl = `/${article.subject.nameNormalized}/${urlDate}/${oldUrlTitle}`;
 
+        const save = async () => {
+            article = await article.save();
+
+            console.log(`Successfully added the article '${title}'`);
+
+            cache.clear();
+
+            // Send response
+            return res.status(200).json({
+                success: true,
+                data: article
+            });   
+        } 
+
         if (image) {          
             const fileName = `${new Date(article.createdAt).toISOString().slice(0, 7)}-${urlTitle}.png`;
             const filePath = `${__dirname}/../static/images/${fileName}`;
@@ -301,19 +317,11 @@ exports.addArticle = async (req, res) => {
 
                 image = await image.save();
 
-                article = await article.save();
-
-                console.log(`Successfully added the article '${title}'`);
-
-                cache.clear();
-
-                // Send response
-                return res.status(200).json({
-                    success: true,
-                    data: article
-                });   
+                save();
             });
-        };
+        } else {
+            save();
+        }
     } catch (error) {
         // Handle error
         ErrorHandler.handleRouteError(res, error);
@@ -427,7 +435,12 @@ exports.editArticle = async (req, res) => {
 
         // Change the main text
         if (data.mainText) {
-            const mainText = (data.mainText || "").toString();
+            let mainText = (data.mainText || "").toString();
+            //mainText = mainText.replaceAll("<div>", "<br />").replaceAll("</div>", "");
+            mainText = sanitizeHtml(mainText, sanitizeOptions);
+            //const mainText = sanitizeHtml((data.mainText || "").toString(), sanitizeOptions);
+
+            console.log(data.mainText, mainText)
 
             article.mainText = mainText;
             article.mainTextNormalized = mainText.toLowerCase().replaceAll("\n", " ").removeMultipleSpaces(); // Normalize the text
@@ -461,6 +474,22 @@ exports.editArticle = async (req, res) => {
     }
 }
 
+
+exports.deleteArticle = async (req, res) => {
+    try {
+        await Article.deleteOne({ _id: req.body.articleId });
+
+        cache.clear();
+
+        res.status(200).json({
+            success: true,            
+        });
+    } catch (error) {
+        // Handle error
+        ErrorHandler.handleRouteError(res, error);
+    }
+}
+
 const dynamicSort = (property) => {
     var sortOrder = 1;
     if (property[0] === "-") {
@@ -482,6 +511,6 @@ const createId = (len = 4, chars = '0123456789') => {
 }
 
 const sanitizeOptions = {
-    allowedTags: ['b', 'i', 'u', 'br'],
+    allowedTags: ['b', 'i', 'u', 'br', 'div'],
     allowedAttributes: {}
 }

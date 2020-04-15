@@ -25,6 +25,8 @@ class GetArticles
                 // Handle the error if one occurs
                 if (err) throw err;
 
+                if (!articles) throw { message: "Kunde inte hitta artikeln" };
+
                 // Format the article data
                 const data = ArticleDataFormatter.format(articles.length == undefined ? [articles] : articles, options.articleFormat); 
 
