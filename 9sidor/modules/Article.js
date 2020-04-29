@@ -44,7 +44,7 @@ const ArticleSchema = mongoose.Schema({
     },
     hidden: {
         type: Boolean,
-        default: true
+        default: false
     },
     createdAt: {
         type: Date,
