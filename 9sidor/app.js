@@ -29,8 +29,8 @@ app.use("/static", express.static(__dirname + "/static"));
 app.use(morgan('[9sidor] :method :url :status :res[content-length] :response-time ms :date[web]'));
 
 // Body parser
-app.use(express.json({limit: "50mb"}));
-app.use(express.urlencoded({limit: "50mb", extended: true}));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // Routes
 app.use("/api/v1/articles", require("./routes/articles"));

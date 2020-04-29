@@ -38,6 +38,14 @@ const ArticleSchema = mongoose.Schema({
     oldUrl: {
         type: String
     },
+    showOnStartPage: {
+        type: Boolean,
+        default: true
+    },
+    hidden: {
+        type: Boolean,
+        default: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

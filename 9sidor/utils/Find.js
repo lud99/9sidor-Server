@@ -33,8 +33,8 @@ class Find
                 throw { message: "Ogiltig kategori angiven" };
         
             // Only find articles with a specific subject if one is specified, otherwise find all articles
-            const findQuery = !isSpecialSubject ? { subject: subject._id } : null;
-        
+            const findQuery = !isSpecialSubject ? { subject: subject._id, hidden: false } : { hidden: false };
+
             return {
                 subjectName,
                 page,

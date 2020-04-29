@@ -222,8 +222,6 @@ exports.addArticle = async (req, res) => {
         // Get the main text
         const mainText = sanitizeHtml((data.mainText || "").toString(), sanitizeOptions);
 
-        console.log(mainText)
-
         if (!mainText) throw { message: "Ingen text angiven" };
 
         // Normalize the main text 
@@ -435,12 +433,7 @@ exports.editArticle = async (req, res) => {
 
         // Change the main text
         if (data.mainText) {
-            let mainText = (data.mainText || "").toString();
-            //mainText = mainText.replaceAll("<div>", "<br />").replaceAll("</div>", "");
-            mainText = sanitizeHtml(mainText, sanitizeOptions);
-            //const mainText = sanitizeHtml((data.mainText || "").toString(), sanitizeOptions);
-
-            console.log(data.mainText, mainText)
+            let mainText = sanitizeHtml((data.mainText || "").toString(), sanitizeOptions);
 
             article.mainText = mainText;
             article.mainTextNormalized = mainText.toLowerCase().replaceAll("\n", " ").removeMultipleSpaces(); // Normalize the text
@@ -448,7 +441,7 @@ exports.editArticle = async (req, res) => {
 
         // Change the preview text
         if (data.previewText) {
-            const previewText = (data.previewText || "").toString();
+            const previewText = sanitizeHtml((data.previewText || "").toString(), sanitizeOptions);
 
             article.previewText = previewText;
         }

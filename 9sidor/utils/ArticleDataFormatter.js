@@ -14,48 +14,6 @@ class ArticleDataFormatter
 
             // Preview format
             switch (format) {
-                // Internal formatting
-                case this.formats.internal: {
-                    data.push(article);
-
-                    break;
-                };
-
-                // Default formatting
-                case this.formats.default: {
-                    data.push({
-                        _id: article._id,
-                        subject: subject,
-                        image: image,
-                        title: article.title,
-                        titleLowercase: article.titleLowercase,
-                        titleNormalized: article.titleNormalized,
-                        mainText: article.mainText,
-                        previewText: article.previewText,
-                        displayDate: article.displayDate,
-                        createdAt: article.createdAt,
-                        url: article.url
-                    });
-
-                    break;
-                }
-
-                // Preview formatting
-                case this.formats.preview: {
-                    data.push({
-                        _id: article._id,
-                        subject: subject,
-                        image: image,
-                        title: article.title,
-                        previewText: article.previewText,
-                        displayDate: article.displayDate,
-                        createdAt: article.createdAt,
-                        url: article.url
-                    });
-
-                    break;
-                }
-
                 // List formatting
                 case this.formats.list: {
                     // Find the subject object added to the data array
