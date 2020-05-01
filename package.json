@@ -9,7 +9,8 @@
         "express": "^4.17.1",
         "mongoose": "^5.8.11",
         "morgan": "^1.10.0",
-        "sanitize-html": "^1.23.0"
+        "sanitize-html": "^1.23.0",
+        "twitter": "^1.7.1"
     },
     "scripts": {
         "start": "node app.js",
