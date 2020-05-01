@@ -1,7 +1,3 @@
 node_modules
 
-db.env
-
-static/images/*
-
-!static/images/.gitkeep
+secrets.env

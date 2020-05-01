@@ -12,6 +12,7 @@ exports.connectDB = async callback => {
 
         console.log(`MongoDB connected: ${conn.connection.host}`);
     } catch (error) {
+        console.error(error)
         return callback(error);
     }
 }

@@ -1,11 +1,12 @@
 const FileManager = require("../utils/FileManager");
-const fs = require("fs");
 
 const Article = require("../modules/Article");
 const Subject = require("../modules/Subject");
 const Image = require("../modules/Image");
 
 const sanitizeHtml = require('sanitize-html');
+
+const cloudinary = require('cloudinary').v2;
 
 // Get articles
 const GetArticles = require("../utils/GetArticles");
@@ -37,48 +38,6 @@ exports.getArticlesDefault = async (req, res) => {
 
     // Get articles
     GetArticles.get(req.originalUrl, subject, (err, response) => {
-        // Handle error
-        if (err) return ErrorHandler.handleRouteError(res, err);
-
-        res.status(200).json(response);
-    }, options);
-}
-
-/** 
- * Get articles with internal formatting (directly from the database). Can get articles based on a specific subject, or get them all.
- * 
- * @route GET /api/v1/articles/internal/:subject?page&limit
- * @access Public 
-*/
-
-exports.getArticlesInternal = async (req, res) => {
-    // Setup options
-    const options = GetArticles.options().get;
-    options.articleFormat = ArticleDataFormatter.formats.internal; // Internal formatting
-
-    // Get articles
-    GetArticles.get(req.originalUrl, req.params.subject, (err, response) => {
-        // Handle error
-        if (err) return ErrorHandler.handleRouteError(res, err);
-
-        res.status(200).json(response);
-    }, options);
-}
-
-/** 
- * Get articles with preview formatting. Can get articles based on a specific subject, or get them all.
- * 
- * @route GET /api/v1/articles/preview/:subject?page&limit
- * @access Public 
-*/
-
-exports.getArticlesPreview = async (req, res) => {
-    // Setup options
-    const options = GetArticles.options().get;
-    options.articleFormat = ArticleDataFormatter.formats.preview; // Preview formatting
-
-    // Get articles
-    GetArticles.get(req.originalUrl, req.params.subject, (err, response) => {
         // Handle error
         if (err) return ErrorHandler.handleRouteError(res, err);
 
@@ -201,7 +160,8 @@ exports.addArticle = async (req, res) => {
         const subjectNameLowercase = data.subject.toString().toLowerCase();
 
         // Remove the header from the base 64 string
-        const imageBase64 = data.imageDataUri ? data.imageDataUri.split(";base64,").pop() : undefined;
+        const imageBase64 = data.imageDataUri;
+        const imageUrl = data.imageUrl;
 
         // Get the image text
         const imageText = (data.imageText || "").toString()
@@ -252,9 +212,9 @@ exports.addArticle = async (req, res) => {
         let image = undefined;
 
         // If the article should have an image
-        if (imageBase64) 
+        if (imageBase64 || imageUrl) 
             image = await Image.create({
-                url: "",
+                url: imageUrl.slice(0, 5) === "https" ? imageUrl : "",
                 text: imageText
             });
 
@@ -284,38 +244,31 @@ exports.addArticle = async (req, res) => {
         article.url = `/${article.subject.nameNormalized}/${urlDate}/${urlTitle}`;
         article.oldUrl = `/${article.subject.nameNormalized}/${urlDate}/${oldUrlTitle}`;
 
-        const save = async () => {
-            article = await article.save();
-
-            console.log(`Successfully added the article '${title}'`);
-
-            cache.clear();
-
-            // Send response
-            return res.status(200).json({
-                success: true,
-                data: article
-            });   
-        } 
-
-        if (image) {          
-            const fileName = `${new Date(article.createdAt).toISOString().slice(0, 7)}-${urlTitle}.png`;
-            const filePath = `${__dirname}/../static/images/${fileName}`;
-
-            FileManager.writeBase64Image(filePath, imageBase64, async (error) => {
+        if (image && imageBase64) {          
+            await cloudinary.uploader.upload(imageBase64, async (error, result) => {
                 if (error) throw error;
 
-                console.log("Successfully saved the image '%s'", fileName);
+                console.log("Successfully saved the image '%s'", result.secure_url);
 
-                image.url = `/static/images/${fileName}`;
+                image.url = result.secure_url;
 
                 image = await image.save();
 
-                save();
+                return Promise.resolve();
             });
-        } else {
-            save();
         }
+
+        article = await article.save();
+
+        console.log(`Successfully added the article '${title}'`);
+
+        cache.clear();
+
+        // Send response
+        return res.status(200).json({
+            success: true,
+            data: article
+        });  
     } catch (error) {
         // Handle error
         ErrorHandler.handleRouteError(res, error);
@@ -400,30 +353,23 @@ exports.editArticle = async (req, res) => {
 
         // Change the image            
         if (data.imageDataUri) {
-            // Remove the header from the base 64 string
-            const imageBase64 = data.imageDataUri.split(";base64,").pop();
-
-            // TODO: Change image
-            const fileName = `${new Date(article.createdAt).toISOString().slice(0, 7)}-${getUrlTitle(article.titleNormalized)}.png`;
-            const filePath = `${__dirname}/../static/images/${fileName}`;
-
-            FileManager.writeBase64Image(filePath, imageBase64, async (error) => {
+            await cloudinary.uploader.upload(data.imageDataUri, async (error, result) => {
                 if (error) throw error;
 
-                imageUrl = `/static/images/${fileName}`;
-
                 if (article.image) {
-                    article.image.url = imageUrl;
+                    article.image.url = result.secure_url;
     
                     await article.image.save();
                 } else {
                     article.image = await Image.create({
-                        url: imageUrl,
+                        url: result.secure_url,
                         text: ""
                     });
                 }
 
-                console.log("Successfully saved the image '%s'", fileName);
+                console.log("Successfully saved the image '%s'", result.secure_url);
+
+                return Promise.resolve();
             });
         }
 
@@ -451,7 +397,7 @@ exports.editArticle = async (req, res) => {
 
         cache.clear();
 
-        await article.save()
+        await article.save();
 
         res.status(200).json({
             success: true,

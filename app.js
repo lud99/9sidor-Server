@@ -7,7 +7,7 @@ const { connectDB } = require("./config/db");
 
 // Load env
 dotenv.config({ path: __dirname + "/config/config.env" });
-dotenv.config({ path: __dirname + "/config/db.env" });
+dotenv.config({ path: __dirname + "/config/secrets.env" });
 
 // Connect to database
 connectDB();
