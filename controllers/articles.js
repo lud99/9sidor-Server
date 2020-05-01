@@ -4,6 +4,8 @@ const Image = require("../modules/Image");
 
 const sanitizeHtml = require('sanitize-html');
 
+const request = require("request");
+
 const cloudinary = require('cloudinary').v2;
 
 const Twitter = require('twitter');
@@ -20,12 +22,15 @@ const ArticleDataFormatter = require("../utils/ArticleDataFormatter");
 // Error handling
 const ErrorHandler = require("../utils/ErrorHandler");
 
-const twitterClient = new Twitter({
-    consumer_key: process.env.TWITTER_API_KEY,
-    consumer_secret: process.env.TWITTER_API_SECRET_KEY,
-    access_token_key: process.env.TWITTER_ACCESS_TOKEN,
-    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
-});
+if (process.env.TWITTER_API_KEY)
+    var twitterClient = new Twitter({
+        consumer_key: process.env.TWITTER_API_KEY,
+        consumer_secret: process.env.TWITTER_API_SECRET_KEY,
+        access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+        access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+    });
+else 
+    var twitterClient = null;
 
 /** 
  * Get articles with default formatting. Can get articles based on a specific subject, or get them all.
@@ -452,11 +457,44 @@ const createId = (len = 4, chars = '0123456789') => {
     return id;
 }
 
-const tweetArticle = ({ title, url }) => {
-    twitterClient.post('statuses/update', { status: `${title} ${url}` }, (error, tweet, response) => {
-        if (!error) 
+const tweetArticle = async ({ title, url, previewText, image }, callback) => {
+    if (!twitterClient) return;
+    
+    const tweet = (media) => {
+        const tweetStatus = {
+            status: 
+
+`${previewText.replaceAll("<div>", "\n").replaceAll("</div>", "").replaceAll("<br>", "\n").replaceAll("&nbsp;", " ").replaceAll("<br />", "\n")} 
+
+https://9sidor.ml/sv${url}`,
+
+            media_ids: media ? media.media_id_string : undefined
+        }
+
+
+        twitterClient.post('statuses/update', tweetStatus, error => {
+            console.log("tweet")
+            if (error) return console.error(error);
+            
             console.log("Tweeted article '%s'", title);
-    })
+
+            return callback(tweet);
+        })
+    }
+
+    if (image && image.url) {
+        request.get(image.url, { encoding: null }, async (error, response, body) => {
+            if (!error) {
+                twitterClient.post('media/upload', { media: body }, async (error, media) => {
+                    console.log("Uploaded tweet image")
+
+                    tweet(media);
+                });
+            }
+        });
+    } else {
+        tweet()
+    }    
 }
 
 const sanitizeOptions = {
