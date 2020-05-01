@@ -96,8 +96,6 @@ exports.getArticlesPreview = async (req, res) => {
 exports.getArticlesList = async (req, res) => {
     // Check if a cache for the specified url exists
     if (cache.exists(req.originalUrl)) {
-        //console.log("Loading from cache", req.originalUrl);
-
         // Get the cached response
         const response = cache.get(req.originalUrl);
 
@@ -157,8 +155,6 @@ exports.getArticlesList = async (req, res) => {
 
                     // Cache the data
                     cache.update(req.originalUrl, response);
-
-                    //console.log("Updating the cache for", req.originalUrl);
 
                     return res.status(200).json(response);
                 }

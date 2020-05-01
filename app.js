@@ -7,6 +7,7 @@ const { connectDB } = require("./config/db");
 
 // Load env
 dotenv.config({ path: __dirname + "/config/config.env" });
+dotenv.config({ path: __dirname + "/config/db.env" });
 
 // Connect to database
 connectDB();
@@ -43,7 +44,9 @@ app.get("/", (req, res) => res.status(301).redirect("https://9sidor.ml"));
 module.exports = () => {
     const module = {};
 
-    module.startServer = () => app.listen(process.env.PORT || 5000, () => console.log("9sidor server running on port ", process.env.PORT || 5000));
+    const port = process.env.app_port || process.env.PORT || 5000;
+
+    module.startServer = () => app.listen(port, () => console.log("9sidor server running on port ", port));
 
     module.app = app;
 

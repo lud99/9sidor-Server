@@ -6,8 +6,6 @@ class GetSubjects
     {
         // Check if a cache for the specified url exists
         if (cache.exists(url) && options.useCache) {
-            //console.log("Loading from cache", url);
-
             // Get the cached response
             const response = cache.get(url);
 
@@ -29,14 +27,8 @@ class GetSubjects
                 };
 
                 // Only cache the data if specified
-                if (options.useCache) {
-                    // Cache the data
-                    cache.update(url, response);
-
-                    //console.log("Updating the cache for", url);
-                } else {
-                    //console.log("Not using cache for", url);
-                }
+                if (options.useCache) 
+                    cache.update(url, response); // Cache the data
 
                 // Run the callback
                 callback(null, response);
