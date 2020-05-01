@@ -1,5 +1,3 @@
-const FileManager = require("../utils/FileManager");
-
 const Article = require("../modules/Article");
 const Subject = require("../modules/Subject");
 const Image = require("../modules/Image");
@@ -8,19 +6,26 @@ const sanitizeHtml = require('sanitize-html');
 
 const cloudinary = require('cloudinary').v2;
 
+const Twitter = require('twitter');
+
 // Get articles
 const GetArticles = require("../utils/GetArticles");
 
 // Get subjects
 const GetSubjects = require("../utils/GetSubjects");
 
-const Find = require("../utils/Find");
-
 // Article formatting
 const ArticleDataFormatter = require("../utils/ArticleDataFormatter");
 
 // Error handling
 const ErrorHandler = require("../utils/ErrorHandler");
+
+const twitterClient = new Twitter({
+    consumer_key: process.env.TWITTER_API_KEY,
+    consumer_secret: process.env.TWITTER_API_SECRET_KEY,
+    access_token_key: process.env.TWITTER_ACCESS_TOKEN,
+    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+});
 
 /** 
  * Get articles with default formatting. Can get articles based on a specific subject, or get them all.
@@ -92,8 +97,8 @@ exports.getArticlesList = async (req, res) => {
                 if (err) return ErrorHandler.handleRouteError(res, err);
 
                 // Only add it if the subject has any articles
-                if (data.length > 0) 
-                   data.forEach(article => responseData.articles.push(article)); // Add each article found individually to the array
+                if (data.length > 0)
+                    data.forEach(article => responseData.articles.push(article)); // Add each article found individually to the array
 
                 articleRequestsComplete++;
 
@@ -212,7 +217,7 @@ exports.addArticle = async (req, res) => {
         let image = undefined;
 
         // If the article should have an image
-        if (imageBase64 || imageUrl) 
+        if (imageBase64 || imageUrl)
             image = await Image.create({
                 url: imageUrl.slice(0, 5) === "https" ? imageUrl : "",
                 text: imageText
@@ -231,7 +236,7 @@ exports.addArticle = async (req, res) => {
             displayDate: displayDate,
             createdAt: customCreatedAt
         });
-        
+
         // Add the subject and image documents corresponding to the ids specified
         article = await Article.populate(article, "subject image");
 
@@ -244,7 +249,7 @@ exports.addArticle = async (req, res) => {
         article.url = `/${article.subject.nameNormalized}/${urlDate}/${urlTitle}`;
         article.oldUrl = `/${article.subject.nameNormalized}/${urlDate}/${oldUrlTitle}`;
 
-        if (image && imageBase64) {          
+        if (image && imageBase64) {
             await cloudinary.uploader.upload(imageBase64, async (error, result) => {
                 if (error) throw error;
 
@@ -264,11 +269,13 @@ exports.addArticle = async (req, res) => {
 
         cache.clear();
 
+        tweetArticle(article);
+
         // Send response
         return res.status(200).json({
             success: true,
             data: article
-        });  
+        });
     } catch (error) {
         // Handle error
         ErrorHandler.handleRouteError(res, error);
@@ -344,7 +351,7 @@ exports.editArticle = async (req, res) => {
                 article.image.text = imageText;
 
                 await article.image.save();
-            } else 
+            } else
                 article.image = await Image.create({
                     url: "",
                     text: imageText
@@ -358,7 +365,7 @@ exports.editArticle = async (req, res) => {
 
                 if (article.image) {
                     article.image.url = result.secure_url;
-    
+
                     await article.image.save();
                 } else {
                     article.image = await Image.create({
@@ -417,7 +424,7 @@ exports.deleteArticle = async (req, res) => {
         cache.clear();
 
         res.status(200).json({
-            success: true,            
+            success: true,
         });
     } catch (error) {
         // Handle error
@@ -431,18 +438,25 @@ const dynamicSort = (property) => {
         sortOrder = -1;
         property = property.substr(1);
     }
-    return function (a,b) {
+    return function (a, b) {
         var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
         return result * sortOrder;
     }
 }
 
 const createId = (len = 4, chars = '0123456789') => {
-	let id = "";
-	while (len--) {
-		id += chars[Math.random() * chars.length | 0];
-	}
-	return id;
+    let id = "";
+    while (len--) {
+        id += chars[Math.random() * chars.length | 0];
+    }
+    return id;
+}
+
+const tweetArticle = ({ title, url }) => {
+    twitterClient.post('statuses/update', { status: `${title} ${url}` }, (error, tweet, response) => {
+        if (!error) 
+            console.log("Tweeted article '%s'", title);
+    })
 }
 
 const sanitizeOptions = {
