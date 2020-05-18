@@ -457,7 +457,7 @@ const createId = (len = 4, chars = '0123456789') => {
     return id;
 }
 
-const tweetArticle = async ({ title, url, previewText, image }, callback) => {
+const tweetArticle = async ({ title, url, previewText, image }, callback = () => {}) => {
     if (!twitterClient) return;
     
     const tweet = (media) => {

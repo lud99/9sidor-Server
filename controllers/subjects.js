@@ -1,3 +1,5 @@
+const Subject = require("../modules/Subject");
+
 // Get subjects
 const GetSubjects = require("../utils/GetSubjects");
 
@@ -39,28 +41,42 @@ exports.addSubject = async (req, res, next) => {
         // Remove any emojis or special characters from the subject name
         const nameNormalized = nameLowercase.removeSpecialCharacters(); 
 
+        const url = "/kategori/" + nameNormalized;
+
         // Get the background color
         const backgroundColor = data.backgroundColor.toString();
 
-        // Check if it is an invalid color
-        if (!backgroundColor.validHexColor())
-            return ErrorHandler.invalidColor(res); // Send error response
+        // Get all subjects
+        GetSubjects.get(req.originalUrl, async (err, response) => {
+            // Handle error
+            if (err) return ErrorHandler.handleRouteError(res, err);
 
-        // Create the subject
-        const subject = await Subject.create({
-           name: name,
-           nameLowercase: nameLowercase,
-           nameNormalized: nameNormalized,
-           backgroundColor: backgroundColor
-        });
+            const subjects = response.data;
+    
+            // Check if it is an invalid color
+            if (!backgroundColor.validHexColor())
+                return ErrorHandler.invalidColor(res); // Send error response
 
-        console.log("Successfully added the subject '%s'", name);
+            // Create the subject
+            const subject = await Subject.create({
+                name: name,
+                url: url,
+                nameLowercase: nameLowercase,
+                nameNormalized: nameNormalized,
+                backgroundColor: backgroundColor,
+                index: subjects.length
+            });
 
-        // Send response
-        return res.status(200).json({
-            success: true,
-            data: subject
-        });
+            console.log("Successfully added the subject '%s'", name);
+
+            cache.clear();
+
+            // Send response
+            return res.status(200).json({
+                success: true,
+                data: subject
+            });
+        }); 
     } catch (error) {
         // Handle error
         ErrorHandler.handleRouteError(res, error);

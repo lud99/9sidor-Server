@@ -23,7 +23,7 @@ const SubjectSchema = mongoose.Schema({
     },
     index: {
         type: Number,
-        required: true
+        required: [true, "Ett index måste anges"]
     },
     createdAt: {
         type: Date,
