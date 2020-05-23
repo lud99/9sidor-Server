@@ -38,11 +38,10 @@ if (!global.connections) global.connections = {};
 
 // Connect to database
 connectDB().then(() => {
-
-// Routes
-app.use("/api/v1/articles", require("./routes/articles"));
-app.use("/api/v1/subjects", require("./routes/subjects"));
-app.use("/api/v1/debug", require("./routes/debug"));
+    // Routes
+    app.use("/api/v1/articles", require("./routes/articles"));
+    app.use("/api/v1/subjects", require("./routes/subjects"));
+    app.use("/api/v1/debug", require("./routes/debug"));
 });
 
 module.exports = () => {
