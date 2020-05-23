@@ -1,5 +1,5 @@
 # 9sidor-Server
-The server for the "news" site 9sidor.ml
+The server for the "news" site 9sidor
 
 
 # How to use
@@ -11,7 +11,7 @@ Add your MongoDB connection string, and your cloudinary url (for uploading image
 If you wish to use a twitter bot that tweets when articles are published, you also need to specify your twitter bot credentials. 
 
 ```
-MONGO_URI=<your-mongo-uri>
+MONGO_URI_9SIDOR=<your-mongo-uri>
 CLOUDINARY_URL=<your-cloudinary-url>
 
 TWITTER_API_KEY=<your-api-key>
