@@ -55,4 +55,4 @@ const ArticleSchema = mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("Article", ArticleSchema);
+module.exports = connections.niosidor.model("Article", ArticleSchema);

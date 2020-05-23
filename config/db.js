@@ -3,16 +3,17 @@ const mongoose = require("mongoose");
 exports.connectDB = async callback => {
     try {        
         // Try to connect
-        const conn = await mongoose.connect(process.env.MONGO_URI, {
+        const conn = await mongoose.createConnection(process.env.MONGO_URI_9SIDOR, {
             useNewUrlParser: true,
             useFindAndModify: false,
             useCreateIndex: true,
             useUnifiedTopology: true
         });
 
-        console.log(`MongoDB connected: ${conn.connection.host}`);
+        global.connections.niosidor = conn;
+
+        console.log(`MongoDB connected: ${conn.host}`);
     } catch (error) {
         console.error(error)
-        return callback(error);
     }
 }

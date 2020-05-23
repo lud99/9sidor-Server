@@ -31,4 +31,4 @@ const SubjectSchema = mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("Subject", SubjectSchema);
+module.exports = connections.niosidor.model("Subject", SubjectSchema);

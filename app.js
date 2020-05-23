@@ -9,9 +9,6 @@ const { connectDB } = require("./config/db");
 dotenv.config({ path: __dirname + "/config/config.env" });
 dotenv.config({ path: __dirname + "/config/secrets.env" });
 
-// Connect to database
-connectDB();
-
 // Basic utils
 const Utils = require("./utils/Utils");
 
@@ -33,13 +30,20 @@ app.use(morgan('[9sidor] :method :url :status :res[content-length] :response-tim
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+// Redirect to the default 9sidor.ml if at "/"
+app.get("/", (req, res) => res.status(301).redirect("https://9sidor.ml"));
+
+// Set up global connections variable
+if (!global.connections) global.connections = {};
+
+// Connect to database
+connectDB().then(() => {
+
 // Routes
 app.use("/api/v1/articles", require("./routes/articles"));
 app.use("/api/v1/subjects", require("./routes/subjects"));
 app.use("/api/v1/debug", require("./routes/debug"));
-
-// Redirect to the default 9sidor.ml if at "/"
-app.get("/", (req, res) => res.status(301).redirect("https://9sidor.ml"));
+});
 
 module.exports = () => {
     const module = {};
