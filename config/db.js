@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 exports.connectDB = async () => {
     try {        
-        const uri = process.env.NODE_ENV === "dev" ? 
+        const uri = process.env.NODE_ENV === "development" ? 
             process.env.MONGO_URI_9SIDOR_DEV : process.env.MONGO_URI_9SIDOR_PROD;
 
         // Try to connect
