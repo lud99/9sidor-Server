@@ -78,6 +78,16 @@ exports.getArticlesList = async (req, res) => {
     // Get articles
     GetSubjects.get(req.originalUrl, (err, { data }) => {
 
+        // If no subjects exist
+        if (data.length === 0) {
+            const response = { success: true, data: [] };
+
+            // Cache the data
+            cache.update(req.originalUrl, response);
+            
+            return res.status(200).json(response);
+        }
+
         // Handle error
         if (err) return ErrorHandler.handleRouteError(res, err);
 
@@ -224,7 +234,8 @@ exports.addArticle = async (req, res) => {
         // If the article should have an image
         if (imageBase64 || imageUrl)
             image = await Image.create({
-                url: imageUrl.slice(0, 5) === "https" ? imageUrl : "",
+                url: imageUrl.slice(0, 5) === "https" ? imageUrl : "", // Create the image with an existing url, if it is an url. 
+                                                                       // otherwise leave the url empty and add it later
                 text: imageText
             });
 
@@ -263,6 +274,8 @@ exports.addArticle = async (req, res) => {
                 image.url = result.secure_url;
 
                 image = await image.save();
+
+                article.image.url = image.url;
 
                 return Promise.resolve();
             });
@@ -459,21 +472,24 @@ const createId = (len = 4, chars = '0123456789') => {
 
 const tweetArticle = async ({ title, url, previewText, image }, callback = () => {}) => {
     if (!twitterClient) return;
+
+    const text = previewText.replaceAll("<div>", "\n")
+        .replaceAll("</div>", "")
+        .replaceAll("<br>", "\n")
+        .replaceAll("&nbsp;", " ")
+        .replaceAll("<br />", "\n");
+
+    console.log(text,  `${text}\n\nhttps://9sidor.ml/sv${url}`.length);
     
     const tweet = (media) => {
         const tweetStatus = {
-            status: 
-
-`${previewText.replaceAll("<div>", "\n").replaceAll("</div>", "").replaceAll("<br>", "\n").replaceAll("&nbsp;", " ").replaceAll("<br />", "\n")} 
-
-https://9sidor.ml/sv${url}`,
+            status: `${text}\n\nhttps://9sidor.ml/sv${url}`,
 
             media_ids: media ? media.media_id_string : undefined
         }
 
 
         twitterClient.post('statuses/update', tweetStatus, error => {
-            console.log("tweet")
             if (error) return console.error(error);
             
             console.log("Tweeted article '%s'", title);

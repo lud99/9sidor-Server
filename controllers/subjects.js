@@ -25,12 +25,14 @@ exports.getSubjectsDefault = async (req, res) => {
 /**
  * Add a new subject
  * 
- * @route POST /api/v1/subjects
+ * @route POST /api/v1/subjects/add
  * @access Public 
 */
 exports.addSubject = async (req, res, next) => {
     try {
         const data = req.body;
+
+        if (!data.name) throw { message: "No name specified" };
 
         // Get the subject name and capitalize it
         const name = data.name.toString().toLowerCase().capitalize();
