@@ -184,10 +184,10 @@ exports.addArticle = async (req, res) => {
         const imageUrl = data.imageUrl;
 
         // Get the image text
-        const imageText = (data.imageText || "").toString()
+        const imageText = sanitizeHtml((data.imageText || "").toString(), strictSanitizeOptions);
 
         // Get the title
-        const title = data.title.toString();
+        const title = sanitizeHtml((data.title.toString() || ""), strictSanitizeOptions);
 
         // Make the title lowercase
         const titleLowercase = title.toLowerCase();
@@ -204,14 +204,14 @@ exports.addArticle = async (req, res) => {
         const mainTextNormalized = mainText.toLowerCase().replaceAll("\n", " ").removeMultipleSpaces();
 
         // Get the preview text
-        let previewText = (data.previewText || "").toString();
+        let previewText = sanitizeHtml((data.previewText || "").toString(), sanitizeOptions);
 
         // Use the first paragraph of the main text as the preview text if none is specified
         if (!previewText)
             previewText = mainText.split("<div><br /></div>")[0]; // First paragraph
 
         // Get the display date
-        const displayDate = (data.displayDate || data.createdAt || "").toString();
+        const displayDate = sanitizeHtml((data.displayDate || data.createdAt || "").toString(), strictSanitizeOptions);
 
         if (!displayDate) throw { message: "Inget datum angivet" };
 
@@ -352,7 +352,7 @@ exports.editArticle = async (req, res) => {
 
         // Change the title
         if (data.title) {
-            const title = (data.title || "").toString();
+            const title = sanitizeHtml((data.title || "").toString(), strictSanitizeOptions);
 
             article.title = title;
             article.titleLowercase = title.toLowerCase();
@@ -363,7 +363,7 @@ exports.editArticle = async (req, res) => {
 
         // Change the image text
         if (data.imageText != undefined) {
-            const imageText = (data.imageText || "").toString();
+            const imageText = sanitizeHtml((data.imageText || "").toString(), strictSanitizeOptions);
 
             if (article.image) {
                 article.image.text = imageText;
@@ -404,6 +404,11 @@ exports.editArticle = async (req, res) => {
 
             article.mainText = mainText;
             article.mainTextNormalized = mainText.toLowerCase().replaceAll("\n", " ").removeMultipleSpaces(); // Normalize the text
+
+            if (!data.previewText) {
+                // Use the first paragraph of the main text as the preview text if none is specified
+                article.previewText = mainText.split("<div><br /></div>")[0]; // First paragraph
+            }
         }
 
         // Change the preview text
@@ -415,7 +420,7 @@ exports.editArticle = async (req, res) => {
 
         // Change the display date
         if (data.displayDate) {
-            const displayDate = (data.displayDate || "").toString();
+            const displayDate = sanitizeHtml((data.displayDate || "").toString(), strictSanitizeOptions);
 
             article.displayDate = displayDate;
         }
@@ -473,6 +478,8 @@ const createId = (len = 4, chars = '0123456789') => {
 const tweetArticle = async ({ title, url, previewText, image }, callback = () => {}) => {
     if (!twitterClient) return;
 
+    if (process.env.NODE_END !== "production") return;
+
     const text = previewText.replaceAll("<div>", "\n")
         .replaceAll("</div>", "")
         .replaceAll("<br>", "\n")
@@ -515,5 +522,10 @@ const tweetArticle = async ({ title, url, previewText, image }, callback = () =>
 
 const sanitizeOptions = {
     allowedTags: ['b', 'i', 'u', 'br', 'div'],
+    allowedAttributes: {}
+}
+
+const strictSanitizeOptions = {
+    allowedTags: [],
     allowedAttributes: {}
 }
