@@ -9,7 +9,8 @@ const {
      
     addArticle,
     editArticle,
-    deleteArticle
+    deleteArticle,
+    deleteAllArticles
 } = require("../controllers/articles");
 
 const router = express.Router();
@@ -36,5 +37,8 @@ router.route("/edit").patch(editArticle);
 
 // Detete an article
 router.route("/delete").delete(deleteArticle);
+
+// Detete all articles
+router.route("/delete-all").delete(deleteAllArticles);
 
 module.exports = router;

@@ -177,14 +177,13 @@ exports.addArticle = async (req, res) => {
         const data = req.body;
 
         // Get the subject name and make it lowercase
-        const subjectNameLowercase = data.subject.toString().toLowerCase();
+        const subjectNameLowercase = ((data.subject && data.subject.name) || "").toString().toLowerCase();
 
-        // Remove the header from the base 64 string
-        const imageBase64 = data.imageDataUri;
-        const imageUrl = data.imageUrl;
+        const imageBase64 = (data.image && data.image.dataUri) || "";
+        const imageUrl = (data.image && data.image.url) || "";
 
         // Get the image text
-        const imageText = sanitizeHtml((data.imageText || "").toString(), strictSanitizeOptions);
+        const imageText = sanitizeHtml(((data.image && data.image.text) || "").toString(), strictSanitizeOptions);
 
         // Get the title
         const title = sanitizeHtml((data.title.toString() || ""), strictSanitizeOptions);
@@ -250,6 +249,8 @@ exports.addArticle = async (req, res) => {
             mainTextNormalized: mainTextNormalized,
             previewText: previewText,
             displayDate: displayDate,
+            hidden: data.hidden,
+            showOnStartPage: data.showOnStartPage,
             createdAt: customCreatedAt
         });
 
@@ -336,7 +337,7 @@ exports.editArticle = async (req, res) => {
 
         // Change the subject 
         if (data.subject) {
-            const subjectNameLowercase = (data.subject || "").toString().toLowerCase();
+            const subjectNameLowercase = ((data.subject && data.subject.name) || "").toString().toLowerCase();
 
             // Get the subject document for the specified subject
             const subject = await Subject.findOne({ nameLowercase: subjectNameLowercase });
@@ -362,8 +363,8 @@ exports.editArticle = async (req, res) => {
         }
 
         // Change the image text
-        if (data.imageText != undefined) {
-            const imageText = sanitizeHtml((data.imageText || "").toString(), strictSanitizeOptions);
+        if (data.image && data.image.text) {
+            const imageText = sanitizeHtml((data.image.text || "").toString(), strictSanitizeOptions);
 
             if (article.image) {
                 article.image.text = imageText;
@@ -377,8 +378,8 @@ exports.editArticle = async (req, res) => {
         }
 
         // Change the image            
-        if (data.imageDataUri) {
-            await cloudinary.uploader.upload(data.imageDataUri, async (error, result) => {
+        if (data.image && data.image.dataUri) {
+            await cloudinary.uploader.upload(data.image.dataUri, async (error, result) => {
                 if (error) throw error;
 
                 if (article.image) {
@@ -425,6 +426,16 @@ exports.editArticle = async (req, res) => {
             article.displayDate = displayDate;
         }
 
+        // Change visibility
+        if (data.hidden != null) {
+            article.hidden = data.hidden;
+        }
+
+        // Change start page visibility
+        if (data.showOnStartPage != null) {
+            article.showOnStartPage = data.showOnStartPage;
+        }
+
         cache.clear();
 
         await article.save();
@@ -443,6 +454,29 @@ exports.editArticle = async (req, res) => {
 exports.deleteArticle = async (req, res) => {
     try {
         await Article.deleteOne({ _id: req.body.articleId });
+
+        cache.clear();
+
+        res.status(200).json({
+            success: true,
+        });
+    } catch (error) {
+        // Handle error
+        ErrorHandler.handleRouteError(res, error);
+    }
+}
+
+exports.deleteAllArticles = async (req, res) => {
+    try {
+        const pass = req.body.password;
+
+        if (pass != process.env.SECRET_PASSWORD) 
+            return res.status(401).json({
+                success: false,
+                error: "Fel lösenord"
+            });
+
+        await Article.deleteMany();
 
         cache.clear();
 
@@ -478,7 +512,7 @@ const createId = (len = 4, chars = '0123456789') => {
 const tweetArticle = async ({ title, url, previewText, image }, callback = () => {}) => {
     if (!twitterClient) return;
 
-    if (process.env.NODE_END !== "production") return;
+    if (process.env.NODE_ENV === "development") return; // Don't tweet in dev mode
 
     const text = previewText.replaceAll("<div>", "\n")
         .replaceAll("</div>", "")
