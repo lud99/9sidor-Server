@@ -21,6 +21,7 @@ const ArticleDataFormatter = require("../utils/ArticleDataFormatter");
 
 // Error handling
 const ErrorHandler = require("../utils/ErrorHandler");
+const { response } = require("express");
 
 if (process.env.TWITTER_API_KEY)
     var twitterClient = new Twitter({
@@ -289,6 +290,7 @@ exports.addArticle = async (req, res) => {
         cache.clear();
 
         tweetArticle(article);
+        sendArticleOnDiscord(article);
 
         // Send response
         return res.status(200).json({
@@ -489,6 +491,32 @@ exports.deleteAllArticles = async (req, res) => {
     }
 }
 
+exports.tweetArticle = async (req, res) => {
+    const id = req.params.id;
+
+    const article = await Article.findOne({ _id: id }).populate("subject image");
+
+    if (article) {
+        tweetArticle(article, () => res.json({ success: true }));
+    } else {
+        return res.json({ success: false });
+    }
+} 
+
+exports.sendArticleDiscord = async (req, res) => {
+    const id = req.params.id;
+
+    console.log(id);
+
+    const article = await Article.findOne({ _id: id }).populate("subject image");
+
+    if (article) {
+        sendArticleOnDiscord(article, () => res.json({ success: true }));
+    } else {
+        return res.json({ success: false });
+    }
+} 
+
 const dynamicSort = (property) => {
     var sortOrder = 1;
     if (property[0] === "-") {
@@ -552,6 +580,22 @@ const tweetArticle = async ({ title, url, previewText, image }, callback = () =>
     } else {
         tweet()
     }    
+}
+
+const sendArticleOnDiscord = (article, callback) => {
+    if (!process.env.DISCORD_API_URL) return;
+
+    const url = process.env.DISCORD_API_URL + "/api/v1/post-article";
+
+    request({
+        uri: url,
+        method: "POST",
+        json: article,
+        headers: {'content-type' : 'application/json'}
+    }, (error, response, body) => {
+        if (error) console.log("Discord bot error", error);
+        else if (callback) callback();
+    });
 }
 
 const sanitizeOptions = {

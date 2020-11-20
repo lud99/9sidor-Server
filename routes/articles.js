@@ -10,7 +10,10 @@ const {
     addArticle,
     editArticle,
     deleteArticle,
-    deleteAllArticles
+    deleteAllArticles,
+
+    tweetArticle,
+    sendArticleDiscord
 } = require("../controllers/articles");
 
 const router = express.Router();
@@ -40,5 +43,9 @@ router.route("/delete").delete(deleteArticle);
 
 // Detete all articles
 router.route("/delete-all").delete(deleteAllArticles);
+
+// Social media
+router.route("/tweet/:id").post(tweetArticle);
+router.route("/discord/:id").post(sendArticleDiscord);
 
 module.exports = router;
