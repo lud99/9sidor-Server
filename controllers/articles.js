@@ -289,8 +289,8 @@ exports.addArticle = async (req, res) => {
 
         cache.clear();
 
-        tweetArticle(article);
-        sendArticleOnDiscord(article);
+       // tweetArticle(article);
+        //sendArticleOnDiscord(article);
 
         // Send response
         return res.status(200).json({
