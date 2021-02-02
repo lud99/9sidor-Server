@@ -584,7 +584,7 @@ const tweetArticle = async ({ title, url, previewText, image }, callback = () =>
 
 const sendArticleOnDiscord = (article, callback) => {
     const discordUrl = process.env.NOVE_ENV === "development" ? process.env.DISCORD_API_URL_DEV : process.env.DISCORD_API_URL_PROD;
-    if (!discordUrlL) return;
+    if (!discordUrl) return;
 
     const url = discordUrl + "/api/v1/post-article";
 
