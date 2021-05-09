@@ -101,7 +101,7 @@ exports.getArticlesList = async (req, res) => {
             const subjectName = responseData.subjects[i].nameNormalized;
 
             // Create the url for getting the articles
-            const url = `/api/articles/preview?subject=${subjectName || "all"}&page=${req.query.page || -1}&limit=${req.query.limit || 5}`
+            const url = `/api/articles/preview?subject=${subjectName || "all"}&page=${req.query.page || -1}&limit=${-1/*req.query.limit || 5*/}`
 
             // Setup options
             const options = GetArticles.options().get;
@@ -120,7 +120,6 @@ exports.getArticlesList = async (req, res) => {
 
                 // If all request have been completed
                 if (articleRequestsComplete == responseData.subjects.length) {
-
                     // Format the data
                     responseData.articles = ArticleDataFormatter.format(responseData.articles, ArticleDataFormatter.formats.list);
 
